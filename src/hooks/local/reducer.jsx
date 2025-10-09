@@ -6,7 +6,8 @@ import {
   retrieveFromLocalStorage,
 } from "../constants";
 import CryptoJS from "crypto-js";
-import { apiEndPoints } from "../remote/apiEndpoints";
+// import { apiEndPoints } from "../remote/apiEndpoints";
+import {apiEndPoints} from "../remote/apiEndPoints"
 
 const initialState = {
   users: null,
