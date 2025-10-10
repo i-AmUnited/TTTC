@@ -8,32 +8,35 @@ import InputComp from "../components/input";
 import SelectComp from "../components/select";
 import { useEffect, useState } from "react";
 import { useFormik } from "formik";
-import { cardPayment, userCheckout, validateCode } from "../hooks/local/reducer";
+import {
+  cardPayment,
+  userCheckout,
+  validateCode,
+} from "../hooks/local/reducer";
 import { useDispatch, useSelector } from "react-redux";
 import Spinner from "../components/spinner";
 
 const PageStructure = () => {
-
-  const [activeCategory, setActiveCategory] = useState('undergraduate');
+  const [activeCategory, setActiveCategory] = useState("undergraduate");
   const [promoApplied, setPromoApplied] = useState(false);
-const [promoData, setPromoData] = useState(null);
+  const [promoData, setPromoData] = useState(null);
 
   const handleCategorySwitch = (tab) => {
-  if (tab === 'undergraduate' && secondaryCount > 0) {
-    alert('Please reset secondary school tickets to 0 before switching tabs');
-    return;
-  }
-  if (tab === 'secondary' && undergraduateCount > 0) {
-    alert('Please reset undergraduate tickets to 0 before switching tabs');
-    return;
-  }
-  setActiveCategory(tab);
-};
+    if (tab === "undergraduate" && secondaryCount > 0) {
+      alert("Please reset secondary school tickets to 0 before switching tabs");
+      return;
+    }
+    if (tab === "secondary" && undergraduateCount > 0) {
+      alert("Please reset undergraduate tickets to 0 before switching tabs");
+      return;
+    }
+    setActiveCategory(tab);
+  };
 
-//   const categoryOptions = [
-//   { value: "Undergraduate", name: "Undergraduate" },
-//   { value: "secondary_school", name: "Secondary school" }
-// ];
+  //   const categoryOptions = [
+  //   { value: "Undergraduate", name: "Undergraduate" },
+  //   { value: "secondary_school", name: "Secondary school" }
+  // ];
 
   const [ticketDetails, setTicketDetails] = useState(true);
   const [guestDetails, setGuestDetails] = useState(false);
@@ -41,12 +44,12 @@ const [promoData, setPromoData] = useState(null);
   const showTicketDetails = () => {
     setTicketDetails(true);
     setGuestDetails(false);
-  }
+  };
 
   const showGuestDetails = () => {
     setTicketDetails(false);
     setGuestDetails(true);
-  }
+  };
 
   const [undergraduateCount, setUndergraduateCount] = useState(0);
   const [secondaryCount, setSecondaryCount] = useState(0);
@@ -79,7 +82,7 @@ const [promoData, setPromoData] = useState(null);
 
   useEffect(() => {
     const newGuestsCount = undergraduateCount + secondaryCount;
-    
+
     if (newGuestsCount > guests.length) {
       const newGuests = Array.from(
         { length: newGuestsCount - guests.length },
@@ -91,14 +94,12 @@ const [promoData, setPromoData] = useState(null);
     }
   }, [undergraduateCount, secondaryCount]);
 
-
   const handleInputChange = (index, field, value) => {
     const updatedGuests = [...guests];
     updatedGuests[index][field] = value;
     setGuests(updatedGuests);
   };
 
-  
   const formattedGuests = guests
     .map(
       (g) =>
@@ -109,28 +110,30 @@ const [promoData, setPromoData] = useState(null);
   const undergraduatePrice = 100;
   const secondarySchoolPrice = 2500;
 
-  const totalPrice = (undergraduatePrice*undergraduateCount) + (secondarySchoolPrice*secondaryCount);
-  const price = totalPrice * (1 - promoData / 100)
+  const totalPrice =
+    undergraduatePrice * undergraduateCount +
+    secondarySchoolPrice * secondaryCount;
+  const price = totalPrice * (1 - promoData / 100);
   const dispatch = useDispatch();
 
   const couponCodeForm = useFormik({
     enableReinitialize: true,
     initialValues: {
       promoCode: "",
-      category: activeCategory === "secondary" ? "2" : "1"
+      category: activeCategory === "secondary" ? "2" : "1",
     },
     onSubmit: async (values) => {
-      const {promoCode, category} = values;
+      const { promoCode, category } = values;
       let couponCodeData = { promoCode, category };
       const { payload } = await dispatch(validateCode(couponCodeData));
       if (payload.statusCode === 200) {
         setPromoApplied(true);
-        setPromoData(payload.data.promoRate); 
+        setPromoData(payload.data.promoRate);
       }
     },
   });
 
- const checkoutForm = useFormik({
+  const checkoutForm = useFormik({
     enableReinitialize: true,
     initialValues: {
       emailAddress: "",
@@ -138,29 +141,51 @@ const [promoData, setPromoData] = useState(null);
       hasPromo: promoApplied,
       quantity: totalGuests,
       schoolDetails: formattedGuests,
-      ticketPrice: activeCategory === "secondary" ? secondarySchoolPrice : undergraduatePrice ,
-      promoCode: promoData ? promoData : "" ,
+      ticketPrice:
+        activeCategory === "secondary"
+          ? secondarySchoolPrice
+          : undergraduatePrice,
+      promoCode: promoData ? promoData : "",
       promoPrice: promoApplied === true ? price : "",
     },
     onSubmit: async (values) => {
-      const { emailAddress, fullName, hasPromo, quantity, schoolDetails, ticketPrice, promoCode, promoPrice  } = values;
-      let checkoutData = { emailAddress, fullName, hasPromo, quantity, schoolDetails, ticketPrice, promoCode, promoPrice };
-      
+      const {
+        emailAddress,
+        fullName,
+        hasPromo,
+        quantity,
+        schoolDetails,
+        ticketPrice,
+        promoCode,
+        promoPrice,
+      } = values;
+      let checkoutData = {
+        emailAddress,
+        fullName,
+        hasPromo,
+        quantity,
+        schoolDetails,
+        ticketPrice,
+        promoCode,
+        promoPrice,
+      };
+
       const { payload } = await dispatch(userCheckout(checkoutData));
       if (payload.statusCode === 200) {
         setTimeout(async () => {
           let paymentData = {
-             amount: promoApplied === true ? Number(promoPrice) : Number(ticketPrice)
+            amount:
+              promoApplied === true ? Number(promoPrice) : Number(ticketPrice),
           };
-          
+
           const paymentResponse = await dispatch(cardPayment(paymentData));
           if (paymentResponse.payload.statusCode === 200) {
-            window.location.href = paymentResponse.payload.data.checkoutUrl
+            window.location.href = paymentResponse.payload.data.checkoutUrl;
           }
         }, 2000);
       }
     },
-});
+  });
 
   return (
     <div>
@@ -322,7 +347,9 @@ const [promoData, setPromoData] = useState(null);
                             src={arrowIcon}
                             alt=""
                             className="size-5 rotate-180 cursor-pointer"
-                            onClick={promoApplied? undefined : decreaseUndergraduate}
+                            onClick={
+                              promoApplied ? undefined : decreaseUndergraduate
+                            }
                           />
                           <span className="font-black">
                             {undergraduateCount}
@@ -331,7 +358,9 @@ const [promoData, setPromoData] = useState(null);
                             src={arrowIcon}
                             alt=""
                             className="size-5 cursor-pointer"
-                            onClick={promoApplied? undefined : increaseUndergraduate}
+                            onClick={
+                              promoApplied ? undefined : increaseUndergraduate
+                            }
                           />
                         </div>
                       </div>
@@ -360,20 +389,24 @@ const [promoData, setPromoData] = useState(null);
                             src={arrowIcon}
                             alt=""
                             className="size-5 rotate-180"
-                            onClick={promoApplied? undefined : decreaseSecondary}
+                            onClick={
+                              promoApplied ? undefined : decreaseSecondary
+                            }
                           />
                           <span className="font-black">{secondaryCount}</span>
                           <img
                             src={arrowIcon}
                             alt=""
                             className="size-5"
-                            onClick={promoApplied? undefined : increaseSecondary}
+                            onClick={
+                              promoApplied ? undefined : increaseSecondary
+                            }
                           />
                         </div>
                       </div>
                     </div>
                   )}
-                  
+
                   <form onSubmit={couponCodeForm.handleSubmit}>
                     <InputComp
                       label={"Promo code:"}
@@ -404,11 +437,7 @@ const [promoData, setPromoData] = useState(null);
                       <span className="montserrat text-orange font-extrabold opacity-50">
                         ₦
                       </span>
-                      {!promoApplied ? (
-                        totalPrice
-                      ) : (
-                        <span>{price}</span>
-                      )}
+                      {!promoApplied ? totalPrice : <span>{price}</span>}
                     </span>
                   </div>
                   <div
@@ -437,14 +466,14 @@ const [promoData, setPromoData] = useState(null);
                     className="bg-gray-50 p-4 rounded-md grid grid-cols-1 gap-4 border-b border-gray-200 pb-6"
                   >
                     <div className="font-black">Guest {index + 1}</div>
-                    
-                      <InputComp
-                        label="Full name:"
-                        value={guests[index].fullName}
-                        onChange={(e) =>
-                          handleInputChange(index, "fullName", e.target.value)
-                        }
-                      />
+
+                    <InputComp
+                      label="Full name:"
+                      value={guests[index].fullName}
+                      onChange={(e) =>
+                        handleInputChange(index, "fullName", e.target.value)
+                      }
+                    />
                     {/* <SelectComp
                       label="Category:"
                       options={categoryOptions}
@@ -465,24 +494,31 @@ const [promoData, setPromoData] = useState(null);
                 ))}
                 {/* {formattedGuests} */}
                 <form onSubmit={checkoutForm.handleSubmit}>
-                  <div className="mb-4 font-black mt-5">Ticket buyer information:</div>
+                  <div className="mb-4 font-black mt-5">
+                    Ticket buyer information:
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                     <InputComp
-      label="Full name:"
-      name="fullName"
-      value={checkoutForm.values.fullName}
-      onChange={checkoutForm.handleChange}
-      onBlur={checkoutForm.handleBlur}
-    />
-    <InputComp
-      label="Email address:"
-      name="emailAddress"
-      value={checkoutForm.values.emailAddress}
-      onChange={checkoutForm.handleChange}
-      onBlur={checkoutForm.handleBlur}
-    />
+                      label="Full name:"
+                      name="fullName"
+                      value={checkoutForm.values.fullName}
+                      onChange={checkoutForm.handleChange}
+                      onBlur={checkoutForm.handleBlur}
+                    />
+                    <InputComp
+                      label="Email address:"
+                      name="emailAddress"
+                      value={checkoutForm.values.emailAddress}
+                      onChange={checkoutForm.handleChange}
+                      onBlur={checkoutForm.handleBlur}
+                    />
                   </div>
-                  <button className="rounded-full py-5 px-10 bg-brown text-orange font-semibold cursor-pointer" type="submit">Submit</button>
+                  <button
+                    className="rounded-full py-5 px-10 bg-brown text-orange font-semibold cursor-pointer"
+                    type="submit"
+                  >
+                    Submit
+                  </button>
                 </form>
               </div>
             )}
