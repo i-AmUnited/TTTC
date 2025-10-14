@@ -104,8 +104,8 @@ const PageStructure = () => {
     )
     .join(" | ");
 
-  const undergraduatePrice = 100;
-  const secondarySchoolPrice = 100;
+  const undergraduatePrice = 2000;
+  const secondarySchoolPrice = 2000;
 
   const totalPrice =
     undergraduatePrice * undergraduateCount +
@@ -178,7 +178,7 @@ const PageStructure = () => {
   doc.text("Venue:", 20, 153);
   doc.setTextColor(0, 0, 0);
   doc.setFont(undefined, "normal");
-  doc.text("Iceland Civic Center, Egbeda", 20, 161);
+  doc.text("YUSUF GRILLO HALL, YABA COLLEGE OF TECHNOLOGY Yaba, Lagos", 20, 161);
 
   // Date and time
   doc.setTextColor(...lightGray);
