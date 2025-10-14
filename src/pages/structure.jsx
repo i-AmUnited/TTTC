@@ -35,11 +35,6 @@ const PageStructure = () => {
     setActiveCategory(tab);
   };
 
-  //   const categoryOptions = [
-  //   { value: "Undergraduate", name: "Undergraduate" },
-  //   { value: "secondary_school", name: "Secondary school" }
-  // ];
-
   const [ticketDetails, setTicketDetails] = useState(true);
   const [guestDetails, setGuestDetails] = useState(false);
 
@@ -77,6 +72,7 @@ const PageStructure = () => {
   const [guests, setGuests] = useState(
     Array.from({ length: totalGuests }, () => ({
       fullName: "",
+      category: "",
       schoolName: "",
     }))
   );
@@ -87,7 +83,7 @@ const PageStructure = () => {
     if (newGuestsCount > guests.length) {
       const newGuests = Array.from(
         { length: newGuestsCount - guests.length },
-        () => ({ fullName: "", schoolName: "" })
+        () => ({ fullName: "", category: activeCategory, schoolName: "" })
       );
       setGuests([...guests, ...newGuests]);
     } else if (newGuestsCount < guests.length) {
@@ -104,17 +100,18 @@ const PageStructure = () => {
   const formattedGuests = guests
     .map(
       (g) =>
-        `${g.fullName.trim()}, ${g.schoolName.trim()}`
+        `${g.fullName.trim()}, ${g.category.trim()}, ${g.schoolName.trim()}`
     )
     .join(" | ");
 
   const undergraduatePrice = 100;
-  const secondarySchoolPrice = 2500;
+  const secondarySchoolPrice = 100;
 
   const totalPrice =
     undergraduatePrice * undergraduateCount +
     secondarySchoolPrice * secondaryCount;
   const price = totalPrice * (1 - promoData / 100);
+  
   const dispatch = useDispatch();
 
   const handleDownloadTicket = (name) => {
@@ -208,7 +205,7 @@ const PageStructure = () => {
     enableReinitialize: true,
     initialValues: {
       promoCode: "",
-      category: activeCategory === "secondary" ? "2" : "1",
+      category: "1",
     },
     onSubmit: async (values) => {
       const { promoCode, category } = values;
@@ -403,16 +400,16 @@ const PageStructure = () => {
         <div className="rounded-xl md:col-span-2 overflow-hidden">
           <div className="bg-white rounded-xl border-b-5 border-orange">
             <div className="bg-brown px-6 text-lg font-black text-orange h-20 border-b-5 border-orange flex items-center">
-              <span>Choose Tickets</span>
+              <span>Choose Ticket</span>
             </div>
             {ticketDetails && (
               <div>
                 <div className="py-4 px-6 grid gap-5">
-                  <div className="flex gap-2 mb-6 border-b border-gray-200">
+                  <div className="flex gap-2 mb-6 border-b border-gray-200 w-fit">
                     <button
                       onClick={() => handleCategorySwitch("undergraduate")}
                       disabled={secondaryCount > 0}
-                      className={`px-6 py-3 font-bold transition-colors ${
+                      className={`px-6 py-3 font-bold transition-colors cursor-pointer ${
                         activeCategory === "undergraduate"
                           ? "border-b-2 border-orange text-orange"
                           : secondaryCount > 0
@@ -425,7 +422,7 @@ const PageStructure = () => {
                     <button
                       onClick={() => handleCategorySwitch("secondary")}
                       disabled={undergraduateCount > 0}
-                      className={`px-6 py-3 font-bold transition-colors ${
+                      className={`px-6 py-3 font-bold transition-colors  cursor-pointer ${
                         activeCategory === "secondary"
                           ? "border-b-2 border-orange text-orange"
                           : undergraduateCount > 0
@@ -603,7 +600,7 @@ const PageStructure = () => {
                     />
                   </div>
                 ))}
-                {/* {formattedGuests} */}
+                {formattedGuests}
                 <form onSubmit={checkoutForm.handleSubmit}>
                   <div className="mb-4 font-black mt-5">
                     Ticket buyer information:
