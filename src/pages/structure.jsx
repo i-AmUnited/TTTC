@@ -5,7 +5,6 @@ import calenderIcon from "../assets/icons/calender.svg";
 import locationIcon from "../assets/icons/location.svg";
 import arrowIcon from "../assets/icons/arrow.svg";
 import InputComp from "../components/input";
-import SelectComp from "../components/select";
 import { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import {
@@ -15,11 +14,14 @@ import {
 } from "../hooks/local/reducer";
 import { useDispatch, useSelector } from "react-redux";
 import Spinner from "../components/spinner";
+import jsPDF from "jspdf";
 
 const PageStructure = () => {
   const [activeCategory, setActiveCategory] = useState("undergraduate");
   const [promoApplied, setPromoApplied] = useState(false);
   const [promoData, setPromoData] = useState(null);
+  const [promoCode, setPromoCode] = useState("");
+  const [ticketDownloaded, setTicketDownloaded] = useState(false);
 
   const handleCategorySwitch = (tab) => {
     if (tab === "undergraduate" && secondaryCount > 0) {
@@ -75,7 +77,6 @@ const PageStructure = () => {
   const [guests, setGuests] = useState(
     Array.from({ length: totalGuests }, () => ({
       fullName: "",
-      category: "",
       schoolName: "",
     }))
   );
@@ -86,7 +87,7 @@ const PageStructure = () => {
     if (newGuestsCount > guests.length) {
       const newGuests = Array.from(
         { length: newGuestsCount - guests.length },
-        () => ({ fullName: "", category: "", schoolName: "" })
+        () => ({ fullName: "", schoolName: "" })
       );
       setGuests([...guests, ...newGuests]);
     } else if (newGuestsCount < guests.length) {
@@ -103,7 +104,7 @@ const PageStructure = () => {
   const formattedGuests = guests
     .map(
       (g) =>
-        `${g.fullName.trim()}, ${g.category.trim()}, ${g.schoolName.trim()}`
+        `${g.fullName.trim()}, ${g.schoolName.trim()}`
     )
     .join(" | ");
 
@@ -115,6 +116,93 @@ const PageStructure = () => {
     secondarySchoolPrice * secondaryCount;
   const price = totalPrice * (1 - promoData / 100);
   const dispatch = useDispatch();
+
+  const handleDownloadTicket = (name) => {
+
+  if (!name) {
+    console.log("No name provided");
+    return;
+  }
+
+  const doc = new jsPDF();
+  
+  // Set colors
+  const orangeColor = [255, 140, 0];
+  const brownColor = [101, 67, 33];
+  const lightGray = [150, 150, 150];
+
+  // Header
+  doc.setFillColor(...orangeColor);
+  doc.rect(0, 0, 210, 40, "F");
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(24);
+  doc.setFont(undefined, "bold");
+  doc.text("EVENT TICKET", 105, 25, { align: "center" });
+
+  // Success message
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(16);
+  doc.text("Payment Confirmed!", 105, 55, { align: "center" });
+
+  // Customer details
+  doc.setFontSize(12);
+  doc.setFont(undefined, "bold");
+  doc.setTextColor(...lightGray);
+  doc.text("Attendee Name:", 20, 75);
+  
+  doc.setTextColor(...orangeColor);
+  doc.setFontSize(14);
+  doc.text(name, 20, 85);
+
+  // Event details section
+  doc.setDrawColor(...brownColor);
+  doc.setLineWidth(0.5);
+  doc.line(20, 100, 190, 100);
+
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(14);
+  doc.setFont(undefined, "bold");
+  doc.text("Event Details", 20, 115);
+
+  doc.setFontSize(11);
+  doc.setTextColor(...lightGray);
+  doc.setFont(undefined, "bold");
+  
+  // Event name
+  doc.text("Event Name:", 20, 130);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont(undefined, "normal");
+  doc.text("Teens, Twenties & Trendsetters Convention 2025", 20, 138);
+
+  // Venue
+  doc.setTextColor(...lightGray);
+  doc.setFont(undefined, "bold");
+  doc.text("Venue:", 20, 153);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont(undefined, "normal");
+  doc.text("Iceland Civic Center, Egbeda", 20, 161);
+
+  // Date and time
+  doc.setTextColor(...lightGray);
+  doc.setFont(undefined, "bold");
+  doc.text("Date & Time:", 20, 176);
+  doc.setTextColor(0, 0, 0);
+  doc.setFont(undefined, "normal");
+  doc.text("November 1st, 2025", 20, 184);
+
+  // Footer
+  doc.setLineWidth(0.5);
+  doc.line(20, 240, 190, 240);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(...lightGray);
+  doc.text("Please present this ticket at the venue entrance.", 105, 250, { align: "center" });
+  doc.text("Thank you for your registration!", 105, 257, { align: "center" });
+
+  // Save the PDF
+  doc.save(`TTTC-2025-Ticket-${name.replace(/\s+/g, "-")}.pdf`);
+};
 
   const couponCodeForm = useFormik({
     enableReinitialize: true,
@@ -129,6 +217,7 @@ const PageStructure = () => {
       if (payload.statusCode === 200) {
         setPromoApplied(true);
         setPromoData(payload.data.promoRate);
+        setPromoCode(payload.data.promoCode)
       }
     },
   });
@@ -145,7 +234,7 @@ const PageStructure = () => {
         activeCategory === "secondary"
           ? secondarySchoolPrice
           : undergraduatePrice,
-      promoCode: promoData ? promoData : "",
+      promoCode: promoCode ? promoCode : "",
       promoPrice: promoApplied === true ? price : "",
     },
     onSubmit: async (values) => {
@@ -171,19 +260,41 @@ const PageStructure = () => {
       };
 
       const { payload } = await dispatch(userCheckout(checkoutData));
-      if (payload.statusCode === 200) {
-        setTimeout(async () => {
-          let paymentData = {
-            amount:
-              promoApplied === true ? Number(promoPrice) : Number(ticketPrice),
-          };
+     
+      // if (payload.statusCode === 200) {
+      //   setTimeout(async () => {
+      //     let paymentData = {
+      //       amount:
+      //         promoApplied === true ? Number(promoPrice) : Number(ticketPrice),
+      //     };
 
-          const paymentResponse = await dispatch(cardPayment(paymentData));
-          if (paymentResponse.payload.statusCode === 200) {
-            window.location.href = paymentResponse.payload.data.checkoutUrl;
-          }
-        }, 2000);
-      }
+      //     const paymentResponse = await dispatch(cardPayment(paymentData));
+      //     if (paymentResponse.payload.statusCode === 200) {
+      //       if (promoApplied === true) {
+      //         const reference = paymentResponse.payload?.data?.paymentReference;
+      //         window.location.href = `https://tttc-pi.vercel.app/status?paymentReference=${reference}`;
+      //       } else {
+      //         window.location.href = paymentResponse.payload.data.checkoutUrl;
+      //       }
+      //     }
+      //   }, 1000);
+      // }
+      if (payload.statusCode === 200) {
+  setTimeout(async () => {
+    let paymentData = {
+      amount:
+        promoApplied === true ? Number(promoPrice) : Number(ticketPrice),
+    };
+
+    const paymentResponse = await dispatch(cardPayment(paymentData));
+    if (paymentResponse.payload.statusCode === 200) {
+      window.location.href = paymentResponse.payload.data.checkoutUrl;
+    }
+  }, 1000);
+} else if (payload.statusCode === 215 && !ticketDownloaded) {
+  setTicketDownloaded(true);
+  handleDownloadTicket(payload.data.fullName);
+}
     },
   });
 
@@ -514,11 +625,12 @@ const PageStructure = () => {
                     />
                   </div>
                   <button
-                    className="rounded-full py-5 px-10 bg-brown text-orange font-semibold cursor-pointer"
-                    type="submit"
-                  >
-                    Submit
-                  </button>
+  className="rounded-full py-5 px-10 bg-brown text-orange font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+  type="submit"
+  disabled={ticketDownloaded}
+>
+  {promoApplied ? "Download Ticket" : "Submit"}
+</button>
                 </form>
               </div>
             )}

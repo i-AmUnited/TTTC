@@ -11,7 +11,7 @@ const PaymentStatus = () => {
   const paymentReference = urlParams.get("paymentReference");
   const dispatch = useDispatch();
 
-  const [customerName, setCustomerName] = useState("Tobi");
+  const [customerName, setCustomerName] = useState("");
   // const [paymentData, setPaymentData] = useState(null);
 
   const confirmPaymentForm = useFormik({
@@ -30,7 +30,7 @@ const PaymentStatus = () => {
     },
   });
 
-  // ✅ Automatically submit form when paymentReference is available
+  // Automatically submit form when paymentReference is available
   useEffect(() => {
     if (paymentReference) {
       confirmPaymentForm.handleSubmit();
@@ -139,7 +139,7 @@ const PaymentStatus = () => {
           <div className="font-black text-lg text-orange mt-6">Payment successful!</div>
           <div className="text-sm font-medium">
             Thank you!,{" "}
-            <span className="font-black text-orange underline">{customerName}</span>, your payment
+            <span className="font-black text-orange underline">{customerName ? customerName : <span className="animate-pulse">Verifying customer name...</span>}</span>, your payment
             has been confirmed.
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
@@ -160,7 +160,7 @@ const PaymentStatus = () => {
           </div>
           <button
             onClick={handleDownloadTicket}
-            // disabled={!customerName}
+            disabled={!customerName}
             className="rounded-full py-5 px-10 bg-brown font-semibold cursor-pointer w-fit text-orange disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Download ticket
