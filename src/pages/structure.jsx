@@ -337,7 +337,7 @@ const PageStructure = () => {
                     <span className="font-black opacity-50">Venue:</span>
                   </span>
                   <span className="text-xs font-bold">
-                    Iceland Civic Center, Egbeda
+                    YUSUF GRILLO HALL, YABA COLLEGE OF TECHNOLOGY Yaba, Lagos
                   </span>
                 </div>
               </div>
