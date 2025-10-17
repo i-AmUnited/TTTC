@@ -199,6 +199,7 @@ const PageStructure = () => {
 
   // Save the PDF
   doc.save(`TTTC-2025-Ticket-${name.replace(/\s+/g, "-")}.pdf`);
+  showSuccessMessage("Ticket downloaded");
 };
 
   const couponCodeForm = useFormik({
