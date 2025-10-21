@@ -83,6 +83,13 @@ const slice = createSlice({
 
   extraReducers: (builder) => {
     builder
+
+     .addCase(userCheckout.rejected, (state) => {
+          state.loading = false;
+          state.users = null;
+          // state.error = showSuccessMessage(action?.error?.error);
+      })
+
       .addMatcher(
         isAnyOf(userCheckout.fulfilled, validateCode.fulfilled, cardPayment.fulfilled, confirmPayment.fulfilled),
         (state, action) => {
@@ -92,7 +99,7 @@ const slice = createSlice({
             showSuccessMessage(action.payload.description);
           } else {
             state.error = action.payload.description;
-            showErrorMessage(action.payload.description);
+            // showErrorMessage(action.payload.description);
           }
         }
       )
@@ -107,7 +114,7 @@ const slice = createSlice({
       )
 
       .addMatcher(
-        isAnyOf(userCheckout.rejected, validateCode.rejected, cardPayment.rejected, confirmPayment.rejected),
+        isAnyOf(validateCode.rejected, cardPayment.rejected, confirmPayment.rejected),
         (state, action) => {
           state.loading = false;
           state.users = null;

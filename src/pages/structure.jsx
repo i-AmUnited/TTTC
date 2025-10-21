@@ -15,6 +15,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import Spinner from "../components/spinner";
 import jsPDF from "jspdf";
+import { showSuccessMessage } from "../hooks/constants";
 
 const PageStructure = () => {
   const [activeCategory, setActiveCategory] = useState("undergraduate");
@@ -103,6 +104,13 @@ const PageStructure = () => {
         `${g.fullName.trim()}, ${g.category.trim()}, ${g.schoolName.trim()}`
     )
     .join(" | ");
+
+    // Validation function to check if all guest details are filled
+  const areAllGuestDetailsFilled = () => {
+    return guests.every(
+      (guest) => guest.fullName.trim() !== "" && guest.schoolName.trim() !== ""
+    );
+  };
 
   const undergraduatePrice = 2000;
   const secondarySchoolPrice = 2000;
@@ -278,6 +286,7 @@ const PageStructure = () => {
       //   }, 1000);
       // }
       if (payload.statusCode === 200) {
+      showSuccessMessage("Registration successfull")
   setTimeout(async () => {
     let paymentData = {
       amount:
@@ -290,6 +299,7 @@ const PageStructure = () => {
     }
   }, 1000);
 } else if (payload.statusCode === 215 && !ticketDownloaded) {
+  showSuccessMessage("Registration successfull")
   setTicketDownloaded(true);
   handleDownloadTicket(payload.data.fullName);
 }
@@ -322,24 +332,28 @@ const PageStructure = () => {
                   LIFE (Life. Industry. Finance. Education)
                 </span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 divide-x divide-brown/10">
-                <div className="grid gap-2">
-                  <span className="flex items-center gap-1">
-                    {" "}
-                    <img src={calenderIcon} alt="" />{" "}
-                    <span className="font-black opacity-50">Date:</span>
-                  </span>
-                  <span className="text-xs font-bold">November 1st, 2025</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 divide-x divide-brown/10">
+                <div>
+                  <div className="grid gap-2">
+                    <span className="flex items-center gap-1">
+                      {" "}
+                      <img src={calenderIcon} alt="" />{" "}
+                      <span className="font-black opacity-50">Date:</span>
+                    </span>
+                    <span className="text-xs font-bold">November 1st, 2025</span>
+                  </div>
                 </div>
-                <div className="grid gap-2 md:px-6">
-                  <span className="flex items-center gap-1">
-                    {" "}
-                    <img src={locationIcon} alt="" />{" "}
-                    <span className="font-black opacity-50">Venue:</span>
-                  </span>
-                  <span className="text-xs font-bold">
-                    YUSUF GRILLO HALL, YABA COLLEGE OF TECHNOLOGY Yaba, Lagos
-                  </span>
+                <div className="lg:col-span-2 ">
+                  <div className="grid gap-2 md:px-6">
+                    <span className="flex items-center gap-1">
+                      {" "}
+                      <img src={locationIcon} alt="" />{" "}
+                      <span className="font-black opacity-50">Venue:</span>
+                    </span>
+                    <span className="text-xs font-bold">
+                      YUSUF GRILLO HALL, YABA COLLEGE OF TECHNOLOGY. Yaba, Lagos
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -435,8 +449,8 @@ const PageStructure = () => {
                     </button>
                   </div>
                   {activeCategory === "undergraduate" && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                      <div className="grid gap-1 lg:col-span-2">
+                    <div className="grid md:flex md:justify-between gap-4">
+                      <div className="grid gap-1">
                         <span className="font-bold">
                           Undergraduate Tickets:
                         </span>
@@ -450,8 +464,8 @@ const PageStructure = () => {
                           </span>
                         </span>
                       </div>
-                      <div className="flex items-end">
-                        <div className="flex items-center gap-4 bg-lightText py-4 px-6 rounded-full w-fit">
+                      <div className="flex justify-end">
+                        <div className="flex items-center gap-4 bg-lightText p-4 rounded-full w-fit">
                           <img
                             src={arrowIcon}
                             alt=""
@@ -477,8 +491,8 @@ const PageStructure = () => {
                   )}
 
                   {activeCategory === "secondary" && (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                      <div className="grid gap-1 lg:col-span-2">
+                    <div className="grid md:flex md:justify-between gap-4">
+                      <div className="grid gap-1">
                         <span className="font-bold">
                           Secondary School Tickets:
                         </span>
@@ -492,12 +506,12 @@ const PageStructure = () => {
                           </span>
                         </span>
                       </div>
-                      <div className="flex items-end">
+                      <div className="flex justify-end">
                         <div className="flex items-center gap-4 bg-lightText py-4 px-6 rounded-full w-fit">
                           <img
                             src={arrowIcon}
                             alt=""
-                            className="size-5 rotate-180"
+                            className="size-5 rotate-180 cursor-pointer"
                             onClick={
                               promoApplied ? undefined : decreaseSecondary
                             }
@@ -506,7 +520,7 @@ const PageStructure = () => {
                           <img
                             src={arrowIcon}
                             alt=""
-                            className="size-5"
+                            className="size-5 cursor-pointer"
                             onClick={
                               promoApplied ? undefined : increaseSecondary
                             }
@@ -583,15 +597,7 @@ const PageStructure = () => {
                         handleInputChange(index, "fullName", e.target.value)
                       }
                     />
-                    {/* <SelectComp
-                      label="Category:"
-                      options={categoryOptions}
-                      value={guests[index].category}
-                      onChange={(e) =>
-                        handleInputChange(index, "category", e.target.value)
-                      }
-                      placeholder="Select an option"
-                    /> */}
+                    
                     <InputComp
                       label="School name:"
                       value={guests[index].schoolName}
@@ -601,12 +607,12 @@ const PageStructure = () => {
                     />
                   </div>
                 ))}
-                {formattedGuests}
+                {/* {formattedGuests} */}
                 <form onSubmit={checkoutForm.handleSubmit}>
                   <div className="mb-4 font-black mt-5">
                     Ticket buyer information:
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                  <div className="grid grid-cols-1 gap-5 mb-5">
                     <InputComp
                       label="Full name:"
                       name="fullName"
@@ -622,10 +628,16 @@ const PageStructure = () => {
                       onBlur={checkoutForm.handleBlur}
                     />
                   </div>
+                  <p className="pb-4 text-xs italic">Please make sure you fill the whole form before sumitting. </p>
                   <button
   className="rounded-full py-5 px-10 bg-brown text-orange font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
   type="submit"
-  disabled={ticketDownloaded}
+  disabled={
+     ticketDownloaded || 
+     !areAllGuestDetailsFilled() || 
+     !checkoutForm.values.fullName.trim() || 
+     !checkoutForm.values.emailAddress.trim()
+   }
 >
   {promoApplied ? "Download Ticket" : "Submit"}
 </button>
