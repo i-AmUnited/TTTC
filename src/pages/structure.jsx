@@ -15,7 +15,7 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import Spinner from "../components/spinner";
 import jsPDF from "jspdf";
-import { showSuccessMessage } from "../hooks/constants";
+import { showErrorMessage, showSuccessMessage } from "../hooks/constants";
 
 const PageStructure = () => {
   const [activeCategory, setActiveCategory] = useState("undergraduate");
@@ -224,6 +224,8 @@ const PageStructure = () => {
         setPromoApplied(true);
         setPromoData(payload.data.promoRate);
         setPromoCode(payload.data.promoCode)
+      } else {
+        showErrorMessage(payload.description)
       }
     },
   });
@@ -309,7 +311,7 @@ const PageStructure = () => {
   return (
     <div>
       <Spinner loading={useSelector((state) => state.user).loading} />
-      <div className="text-brown mx-10 md:mx-[100px] lg:mx-[150px] py-5 grid grid-cols-1 lg:grid-cols-5 gap-[10px] text-sm">
+      <div className="text-brown mx-4 md:mx-[100px] lg:mx-[150px] py-5 grid grid-cols-1 lg:grid-cols-5 gap-[10px] text-sm">
         <div className="bg-white rounded-xl border-b-5 border-orange md:col-span-3">
           <div className="bg-brown px-6 rounded-t-lg border-b-orange border-b-4 h-20 flex items-center">
             <img src={logo} alt="TTTC Logo" className="h-12" />
@@ -321,7 +323,7 @@ const PageStructure = () => {
             <div className="text-orange font-black text-lg">
               Teens, Twenties & Trendsetters Convention 2025
             </div>
-            <div className="px-[40px] py-6 border border-brown/10 rounded-lg mt-5 grid gap-6">
+            <div className="px-6 md:px-[40px] py-6 border border-brown/10 rounded-lg mt-5 grid gap-6">
               <div className="grid gap-2">
                 <span className="flex items-center gap-1">
                   {" "}
@@ -332,7 +334,7 @@ const PageStructure = () => {
                   LIFE (Life. Industry. Finance. Education)
                 </span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 divide-x divide-brown/10">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 divide-x divide-brown/10">
                 <div>
                   <div className="grid gap-2">
                     <span className="flex items-center gap-1">
