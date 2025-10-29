@@ -115,9 +115,7 @@ const PageStructure = () => {
   const undergraduatePrice = 2000;
   const secondarySchoolPrice = 2000;
 
-  const totalPrice =
-    undergraduatePrice * undergraduateCount +
-    secondarySchoolPrice * secondaryCount;
+  const totalPrice = undergraduatePrice * undergraduateCount + secondarySchoolPrice * secondaryCount;
   const price = totalPrice * (1 - promoData / 100);
   
   const dispatch = useDispatch();
@@ -238,10 +236,8 @@ const PageStructure = () => {
       hasPromo: promoApplied,
       quantity: totalGuests,
       schoolDetails: formattedGuests,
-      ticketPrice:
-        activeCategory === "secondary"
-          ? secondarySchoolPrice
-          : undergraduatePrice,
+      // ticketPrice: activeCategory === "secondary" ? secondarySchoolPrice : undergraduatePrice,
+      ticketPrice: totalPrice,
       promoCode: promoCode ? promoCode : "",
       promoPrice: promoApplied === true ? price : "",
     },
